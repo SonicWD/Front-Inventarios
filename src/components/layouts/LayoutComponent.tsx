@@ -20,6 +20,8 @@ interface LayoutComponentProps {
     children: ReactNode
     className?: string // Acepta className como prop opcional
   }
+
+  //aca se encuentra el navbar y el sidebar de fora global
 export function LayoutComponent({ children }: LayoutComponentProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
