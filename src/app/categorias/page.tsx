@@ -2,79 +2,103 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import config from '@/utils/config'  // Asegúrate de tener la URL de tu API en config
+import config from '@/utils/config'
 
-// Definición de la interfaz para las categorías
 interface Categoria {
   id: number;
   nombre: string;
   tipo: string;
-  descripcion: string;
+  descripcion?: string;
 }
 
-const tiposCategoria = ['BEBIDA', 'COMIDA', 'UTENSILIO', 'OTRO']
+const tiposCategoria = ['INGREDIENTE', 'BEBIDA', 'UTENSILIO', 'MOBILIARIO', 'LIMPIEZA', 'OFICINA', 'PICNIC', 'DECORACION', 'UNIFORME']
 
 export function CategoriasComponent() {
-  const [categorias, setCategorias] = useState<Categoria[]>([])  // Añadimos el tipo Categoria[]
+  const [categorias, setCategorias] = useState<Categoria[]>([])
   const [newCategoria, setNewCategoria] = useState<Categoria>({
     id: 0, nombre: '', tipo: '', descripcion: ''
   })
+  const [isEditing, setIsEditing] = useState(false)
 
-  // Obtener categorías del backend al cargar el componente
   useEffect(() => {
-    fetch(`${config.API_URL}/categorias`)
-      .then(response => response.json())
-      .then((data: Categoria[]) => setCategorias(data))
-      .catch(error => console.error('Error fetching categories:', error))
+    fetchCategorias()
   }, [])
 
-  // Manejar cambios en los campos del formulario
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const fetchCategorias = async () => {
+    try {
+      const response = await fetch(`${config.API_URL}/categorias`)
+      if (!response.ok) throw new Error('Error al obtener categorías')
+      const data: Categoria[] = await response.json()
+      setCategorias(data)
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewCategoria({ ...newCategoria, [e.target.name]: e.target.value })
   }
 
-  // Agregar una nueva categoría en el backend
+  const handleSelectChange = (value: string) => {
+    setNewCategoria({ ...newCategoria, tipo: value })
+  }
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const response = await fetch(`${config.API_URL}/categorias`, {
-        method: 'POST',
+      const url = isEditing 
+        ? `${config.API_URL}/categorias/${newCategoria.id}`
+        : `${config.API_URL}/categorias`
+      const method = isEditing ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCategoria),
       })
 
-      if (response.ok) {
-        const nuevaCategoria: Categoria = await response.json()
-        setCategorias([...categorias, nuevaCategoria])
-        setNewCategoria({ id: 0, nombre: '', tipo: '', descripcion: '' })
-      } else {
-        console.error('Error adding category:', response.statusText)
-      }
+      if (!response.ok) throw new Error(`Error al ${isEditing ? 'actualizar' : 'agregar'} categoría`)
+      
+      await fetchCategorias()
+      resetForm()
     } catch (error) {
-      console.error('Error adding category:', error)
+      console.error(`Error ${isEditing ? 'updating' : 'adding'} category:`, error)
     }
   }
 
-  // Eliminar una categoría en el backend
   const handleDelete = async (id: number) => {
     try {
       const response = await fetch(`${config.API_URL}/categorias/${id}`, {
         method: 'DELETE',
       })
 
-      if (response.ok) {
-        setCategorias(categorias.filter(categoria => categoria.id !== id))
-      } else {
-        console.error('Error deleting category:', response.statusText)
-      }
+      if (!response.ok) throw new Error('Error al eliminar categoría')
+      
+      await fetchCategorias()
     } catch (error) {
       console.error('Error deleting category:', error)
     }
+  }
+
+  const handleEdit = (categoria: Categoria) => {
+    setNewCategoria(categoria)
+    setIsEditing(true)
+  }
+
+  const resetForm = () => {
+    setNewCategoria({ id: 0, nombre: '', tipo: '', descripcion: '' })
+    setIsEditing(false)
   }
 
   return (
@@ -94,16 +118,15 @@ export function CategoriasComponent() {
             onChange={handleInputChange}
             required
           />
-          <Select
-            name="tipo"
-            value={newCategoria.tipo}
-            onValueChange={handleInputChange}
-            required
-          >
-            <option value="">Seleccione un tipo</option>
-            {tiposCategoria.map(tipo => (
-              <option key={tipo} value={tipo}>{tipo}</option>
-            ))}
+          <Select onValueChange={handleSelectChange} value={newCategoria.tipo}>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione un tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              {tiposCategoria.map(tipo => (
+                <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+              ))}
+            </SelectContent>
           </Select>
           <Input
             name="descripcion"
@@ -112,9 +135,24 @@ export function CategoriasComponent() {
             onChange={handleInputChange}
           />
         </div>
-        <Button type="submit" className="mt-4">
-          <Plus className="mr-2 h-4 w-4" /> Agregar Categoría
-        </Button>
+        <div className="mt-4 flex justify-between">
+          <Button type="submit">
+            {isEditing ? (
+              <>
+                <Save className="mr-2 h-4 w-4" /> Actualizar Categoría
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" /> Agregar Categoría
+              </>
+            )}
+          </Button>
+          {isEditing && (
+            <Button type="button" variant="outline" onClick={resetForm}>
+              Cancelar Edición
+            </Button>
+          )}
+        </div>
       </form>
 
       <Table>
@@ -133,7 +171,7 @@ export function CategoriasComponent() {
               <TableCell>{categoria.tipo}</TableCell>
               <TableCell>{categoria.descripcion}</TableCell>
               <TableCell>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(categoria)}>
                   <Edit className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => handleDelete(categoria.id)}>
@@ -147,4 +185,5 @@ export function CategoriasComponent() {
     </motion.div>
   )
 }
+
 export default CategoriasComponent
