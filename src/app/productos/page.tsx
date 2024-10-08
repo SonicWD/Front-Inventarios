@@ -1,26 +1,33 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Plus, Edit, Trash2, Save } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Plus, Edit, Trash2, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import config from '@/utils/config'
+} from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import config from '@/utils/config';
 
+// Enum para los tipos perecibles
+enum TipoPerecible {
+  PERECEDERO = 'PERECEDERO',
+  NO_PERECEDERO = 'NO_PERECEDERO',
+}
+
+// Interfaces
 interface Producto {
   id: number;
   nombre: string;
   descripcion: string;
   categoria_id: number;
-  tipo_perecible: 'PERECEDERO' | 'NO_PERECEDERO';
+  tipo_perecible: TipoPerecible;
   stock_minimo: number;
   unidad: string;
   precio: number;
@@ -32,102 +39,101 @@ interface Categoria {
   nombre: string;
 }
 
-const tiposPerecible = ['PERECEDERO', 'NO_PERECEDERO']
-
+// Componente
 export function ProductosComponent() {
-  const [productos, setProductos] = useState<Producto[]>([])
-  const [categorias, setCategorias] = useState<Categoria[]>([])
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [newProducto, setNewProducto] = useState<Producto>({
     id: 0,
     nombre: '',
     descripcion: '',
     categoria_id: 0,
-    tipo_perecible: 'NO_PERECEDERO',
+    tipo_perecible: TipoPerecible.NO_PERECEDERO, // Default value
     stock_minimo: 0,
     unidad: '',
     precio: 0,
-    activo: true
-  })
-  const [isEditing, setIsEditing] = useState(false)
+    activo: true,
+  });
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    fetchProductos()
-    fetchCategorias()
-  }, [])
+    fetchProductos();
+    fetchCategorias();
+  }, []);
 
   const fetchProductos = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/items`)
-      if (!response.ok) throw new Error('Error al obtener productos')
-      const data: Producto[] = await response.json()
-      setProductos(data)
+      const response = await fetch(`${config.API_URL}/items`);
+      if (!response.ok) throw new Error('Error al obtener productos');
+      const data: Producto[] = await response.json();
+      setProductos(data);
     } catch (error) {
-      console.error('Error fetching productos:', error)
+      console.error('Error fetching productos:', error);
     }
-  }
+  };
 
   const fetchCategorias = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/categorias`)
-      if (!response.ok) throw new Error('Error al obtener categorías')
-      const data: Categoria[] = await response.json()
-      setCategorias(data)
+      const response = await fetch(`${config.API_URL}/categorias`);
+      if (!response.ok) throw new Error('Error al obtener categorías');
+      const data: Categoria[] = await response.json();
+      setCategorias(data);
     } catch (error) {
-      console.error('Error fetching categorias:', error)
+      console.error('Error fetching categorias:', error);
     }
-  }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setNewProducto(prev => ({
       ...prev,
-      [name]: name === 'stock_minimo' || name === 'precio' ? Number(value) : value
-    }))
-  }
+      [name]: name === 'stock_minimo' || name === 'precio' ? Number(value) : value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       const url = isEditing
         ? `${config.API_URL}/items/${newProducto.id}`
-        : `${config.API_URL}/items`
-      const method = isEditing ? 'PUT' : 'POST'
+        : `${config.API_URL}/items`;
+      const method = isEditing ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
-        method: method,
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newProducto),
-      })
+      });
 
-      if (!response.ok) throw new Error(`Error al ${isEditing ? 'actualizar' : 'crear'} el producto`)
+      if (!response.ok) throw new Error(`Error al ${isEditing ? 'actualizar' : 'crear'} el producto`);
 
-      await fetchProductos()
-      resetForm()
+      await fetchProductos();
+      resetForm();
     } catch (error) {
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} producto:`, error)
+      console.error(`Error ${isEditing ? 'updating' : 'creating'} producto:`, error);
     }
-  }
+  };
 
   const handleDelete = async (id: number) => {
     try {
       const response = await fetch(`${config.API_URL}/items/${id}`, {
         method: 'DELETE',
-      })
+      });
 
-      if (!response.ok) throw new Error('Error al eliminar el producto')
+      if (!response.ok) throw new Error('Error al eliminar el producto');
 
-      await fetchProductos()
+      await fetchProductos();
     } catch (error) {
-      console.error('Error deleting producto:', error)
+      console.error('Error deleting producto:', error);
     }
-  }
+  };
 
   const handleEdit = (producto: Producto) => {
-    setNewProducto(producto)
-    setIsEditing(true)
-  }
+    setNewProducto(producto);
+    setIsEditing(true);
+  };
 
   const resetForm = () => {
     setNewProducto({
@@ -135,14 +141,14 @@ export function ProductosComponent() {
       nombre: '',
       descripcion: '',
       categoria_id: 0,
-      tipo_perecible: 'NO_PERECEDERO',
+      tipo_perecible: TipoPerecible.NO_PERECEDERO, // Reset to default
       stock_minimo: 0,
       unidad: '',
       precio: 0,
-      activo: true
-    })
-    setIsEditing(false)
-  }
+      activo: true,
+    });
+    setIsEditing(false);
+  };
 
   return (
     <motion.div
@@ -182,13 +188,13 @@ export function ProductosComponent() {
           </Select>
           <Select
             value={newProducto.tipo_perecible}
-            onValueChange={(value) => setNewProducto(prev => ({ ...prev, tipo_perecible: value as 'PERECEDERO' | 'NO_PERECEDERO' }))}
+            onValueChange={(value) => setNewProducto(prev => ({ ...prev, tipo_perecible: value as TipoPerecible }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleccione tipo perecible" />
             </SelectTrigger>
             <SelectContent>
-              {tiposPerecible.map(tipo => (
+              {Object.values(TipoPerecible).map(tipo => (
                 <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
               ))}
             </SelectContent>
@@ -260,11 +266,11 @@ export function ProductosComponent() {
               <TableCell>{producto.unidad}</TableCell>
               <TableCell>${producto.precio.toFixed(2)}</TableCell>
               <TableCell>
-                <Button variant="ghost" size="sm" onClick={() => handleEdit(producto)}>
-                  <Edit className="h-4 w-4" />
+                <Button variant="link" onClick={() => handleEdit(producto)}>
+                  <Edit className="mr-1 h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(producto.id)}>
-                  <Trash2 className="h-4 w-4" />
+                <Button variant="link" onClick={() => handleDelete(producto.id)}>
+                  <Trash2 className="mr-1 h-4 w-4" />
                 </Button>
               </TableCell>
             </TableRow>
@@ -272,7 +278,6 @@ export function ProductosComponent() {
         </TableBody>
       </Table>
     </motion.div>
-  )
+  );
 }
-
-export default ProductosComponent
+export default ProductosComponent;
