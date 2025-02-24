@@ -39,6 +39,9 @@ interface Categoria {
   nombre: string;
 }
 
+// Opciones para la unidad de medida
+const unidades = ['Unidad', 'Kilogramo', 'Gramo', 'Litro', 'Mililitro'];
+
 export function ProductosComponent() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -49,7 +52,7 @@ export function ProductosComponent() {
     categoria_id: 0,
     tipo_perecible: TipoPerecible.NO_PERECEDERO, // Valor por defecto
     stock_minimo: 0,
-    unidad: '',
+    unidad: '', // Inicialmente vacío
     precio: 0,
     activo: true,
   });
@@ -226,13 +229,24 @@ export function ProductosComponent() {
             onChange={handleInputChange}
             required
           />
-          <Input
-            name="unidad"
-            placeholder="Unidad de medida"
+          {/* Reemplazamos el Input de unidad por un Select */}
+          <Select
             value={newProducto.unidad}
-            onChange={handleInputChange}
-            required
-          />
+            onValueChange={(value) =>
+              setNewProducto(prev => ({ ...prev, unidad: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione unidad de medida" />
+            </SelectTrigger>
+            <SelectContent>
+              {unidades.map(u => (
+                <SelectItem key={u} value={u}>
+                  {u}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             name="precio"
             type="number"

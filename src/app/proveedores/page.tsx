@@ -11,7 +11,7 @@ import config from '@/utils/config'
 interface Proveedor {
   id: number;
   nombre: string;
-  contacto: string;
+  persona_contacto: string;
   correo: string;
   telefono: string;
   direccion: string;
@@ -22,7 +22,7 @@ export default function Proveedores() {
   const [newProveedor, setNewProveedor] = useState<Proveedor>({
     id: 0,
     nombre: '',
-    contacto: '',
+    persona_contacto: '',
     correo: '',
     telefono: '',
     direccion: ''
@@ -108,7 +108,7 @@ export default function Proveedores() {
     setNewProveedor({
       id: 0,
       nombre: '',
-      contacto: '',
+      persona_contacto: '',
       correo: '',
       telefono: '',
       direccion: ''
@@ -134,9 +134,9 @@ export default function Proveedores() {
             required
           />
           <Input
-            name="contacto"
+            name="persona_contacto"
             placeholder="Persona de contacto"
-            value={newProveedor.contacto}
+            value={newProveedor.persona_contacto}
             onChange={handleInputChange}
             required
           />
@@ -198,7 +198,7 @@ export default function Proveedores() {
           {proveedores.map((proveedor) => (
             <TableRow key={proveedor.id}>
               <TableCell>{proveedor.nombre}</TableCell>
-              <TableCell>{proveedor.contacto}</TableCell>
+              <TableCell>{proveedor.persona_contacto}</TableCell>
               <TableCell>{proveedor.correo}</TableCell>
               <TableCell>{proveedor.telefono}</TableCell>
               <TableCell>{proveedor.direccion}</TableCell>

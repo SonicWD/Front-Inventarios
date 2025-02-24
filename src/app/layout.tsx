@@ -30,10 +30,6 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <ConditionalLayout>{children}</ConditionalLayout>
-
-        <LayoutComponent>
-          {children}
-        </LayoutComponent>
       </body>
     </html>
   );
