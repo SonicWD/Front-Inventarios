@@ -29,13 +29,25 @@ export default function Proveedores() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
+  // Función auxiliar para obtener los headers con el token actualizado
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('access_token')
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    }
+  }
+
   useEffect(() => {
     fetchProveedores()
   }, [])
 
   const fetchProveedores = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/proveedores`)
+      const response = await fetch(`${config.API_URL}/proveedores`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
       if (!response.ok) throw new Error('Error al obtener proveedores')
       const data: Proveedor[] = await response.json()
       setProveedores(data)
@@ -59,9 +71,7 @@ export default function Proveedores() {
 
       const response = await fetch(url, {
         method: method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newProveedor),
       })
 
@@ -78,6 +88,7 @@ export default function Proveedores() {
     try {
       const response = await fetch(`${config.API_URL}/proveedores/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       })
 
       if (!response.ok) throw new Error('Error al eliminar el proveedor')

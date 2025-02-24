@@ -39,7 +39,6 @@ interface Categoria {
   nombre: string;
 }
 
-// Componente
 export function ProductosComponent() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -48,13 +47,22 @@ export function ProductosComponent() {
     nombre: '',
     descripcion: '',
     categoria_id: 0,
-    tipo_perecible: TipoPerecible.NO_PERECEDERO, // Default value
+    tipo_perecible: TipoPerecible.NO_PERECEDERO, // Valor por defecto
     stock_minimo: 0,
     unidad: '',
     precio: 0,
     activo: true,
   });
   const [isEditing, setIsEditing] = useState(false);
+
+  // Función auxiliar para obtener los headers con el token
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('access_token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+  };
 
   useEffect(() => {
     fetchProductos();
@@ -63,7 +71,10 @@ export function ProductosComponent() {
 
   const fetchProductos = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/items`);
+      const response = await fetch(`${config.API_URL}/items`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
       if (!response.ok) throw new Error('Error al obtener productos');
       const data: Producto[] = await response.json();
       setProductos(data);
@@ -74,7 +85,10 @@ export function ProductosComponent() {
 
   const fetchCategorias = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/categorias`);
+      const response = await fetch(`${config.API_URL}/categorias`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
       if (!response.ok) throw new Error('Error al obtener categorías');
       const data: Categoria[] = await response.json();
       setCategorias(data);
@@ -101,9 +115,7 @@ export function ProductosComponent() {
 
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newProducto),
       });
 
@@ -120,10 +132,9 @@ export function ProductosComponent() {
     try {
       const response = await fetch(`${config.API_URL}/items/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       });
-
       if (!response.ok) throw new Error('Error al eliminar el producto');
-
       await fetchProductos();
     } catch (error) {
       console.error('Error deleting producto:', error);
@@ -141,7 +152,7 @@ export function ProductosComponent() {
       nombre: '',
       descripcion: '',
       categoria_id: 0,
-      tipo_perecible: TipoPerecible.NO_PERECEDERO, // Reset to default
+      tipo_perecible: TipoPerecible.NO_PERECEDERO,
       stock_minimo: 0,
       unidad: '',
       precio: 0,
@@ -175,27 +186,35 @@ export function ProductosComponent() {
           />
           <Select
             value={newProducto.categoria_id.toString()}
-            onValueChange={(value) => setNewProducto(prev => ({ ...prev, categoria_id: Number(value) }))}
+            onValueChange={(value) =>
+              setNewProducto(prev => ({ ...prev, categoria_id: Number(value) }))
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleccione una categoría" />
             </SelectTrigger>
             <SelectContent>
               {categorias.map(categoria => (
-                <SelectItem key={categoria.id} value={categoria.id.toString()}>{categoria.nombre}</SelectItem>
+                <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                  {categoria.nombre}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select
             value={newProducto.tipo_perecible}
-            onValueChange={(value) => setNewProducto(prev => ({ ...prev, tipo_perecible: value as TipoPerecible }))}
+            onValueChange={(value) =>
+              setNewProducto(prev => ({ ...prev, tipo_perecible: value as TipoPerecible }))
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleccione tipo perecible" />
             </SelectTrigger>
             <SelectContent>
               {Object.values(TipoPerecible).map(tipo => (
-                <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                <SelectItem key={tipo} value={tipo}>
+                  {tipo}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -260,7 +279,9 @@ export function ProductosComponent() {
           {productos.map((producto) => (
             <TableRow key={producto.id}>
               <TableCell>{producto.nombre}</TableCell>
-              <TableCell>{categorias.find(c => c.id === producto.categoria_id)?.nombre}</TableCell>
+              <TableCell>
+                {categorias.find(c => c.id === producto.categoria_id)?.nombre}
+              </TableCell>
               <TableCell>{producto.tipo_perecible}</TableCell>
               <TableCell>{producto.stock_minimo}</TableCell>
               <TableCell>{producto.unidad}</TableCell>
@@ -280,4 +301,5 @@ export function ProductosComponent() {
     </motion.div>
   );
 }
+
 export default ProductosComponent;

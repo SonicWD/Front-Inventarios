@@ -64,6 +64,15 @@ export default function Inventario() {
     notas: ''
   })
 
+  // Función auxiliar para obtener los headers con el token actualizado
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('access_token')
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    }
+  }
+
   useEffect(() => {
     fetchConteos()
     fetchMovimientos()
@@ -73,7 +82,10 @@ export default function Inventario() {
 
   const fetchConteos = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/conteos_inventario`)
+      const response = await fetch(`${config.API_URL}/conteos_inventario`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
       if (!response.ok) throw new Error('Error al obtener conteos')
       const data: Conteo[] = await response.json()
       setConteos(data)
@@ -84,7 +96,10 @@ export default function Inventario() {
 
   const fetchMovimientos = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/movimientos_inventario`)
+      const response = await fetch(`${config.API_URL}/movimientos_inventario`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
       if (!response.ok) throw new Error('Error al obtener movimientos')
       const data: Movimiento[] = await response.json()
       setMovimientos(data)
@@ -95,7 +110,10 @@ export default function Inventario() {
 
   const fetchItems = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/items`)
+      const response = await fetch(`${config.API_URL}/items`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
       if (!response.ok) throw new Error('Error al obtener items')
       const data: Item[] = await response.json()
       setItems(data)
@@ -106,7 +124,10 @@ export default function Inventario() {
 
   const fetchAlmacenes = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/almacenes`)
+      const response = await fetch(`${config.API_URL}/almacenes`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
       if (!response.ok) throw new Error('Error al obtener almacenes')
       const data: Almacen[] = await response.json()
       setAlmacenes(data)
@@ -128,9 +149,7 @@ export default function Inventario() {
     try {
       const response = await fetch(`${config.API_URL}/conteos_inventario`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newConteo),
       })
 
@@ -153,9 +172,7 @@ export default function Inventario() {
     try {
       const response = await fetch(`${config.API_URL}/movimientos_inventario`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newMovimiento),
       })
 

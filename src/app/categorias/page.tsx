@@ -31,13 +31,25 @@ export function CategoriasComponent() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
+  // Función auxiliar que retorna los headers con el token actualizado.
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('access_token')
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `${token}`
+    }
+  }
+  console.log ('orueba',getAuthHeaders());
   useEffect(() => {
     fetchCategorias()
   }, [])
 
   const fetchCategorias = async () => {
     try {
-      const response = await fetch(`${config.API_URL}/categorias`)
+      const response = await fetch(`${config.API_URL}/categorias`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      })
       if (!response.ok) throw new Error('Error al obtener categorías')
       const data: Categoria[] = await response.json()
       setCategorias(data)
@@ -61,10 +73,10 @@ export function CategoriasComponent() {
         ? `${config.API_URL}/categorias/${newCategoria.id}`
         : `${config.API_URL}/categorias`
       const method = isEditing ? 'PUT' : 'POST'
-      
+
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newCategoria),
       })
 
@@ -81,6 +93,7 @@ export function CategoriasComponent() {
     try {
       const response = await fetch(`${config.API_URL}/categorias/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       })
 
       if (!response.ok) throw new Error('Error al eliminar categoría')

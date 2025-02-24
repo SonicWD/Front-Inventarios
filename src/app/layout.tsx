@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { LayoutComponent } from "@/components/layouts/LayoutComponent";
+import ConditionalLayout from "@/components/layouts/ConditionalLayout";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -27,10 +28,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>
-        <LayoutComponent className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >{children}</LayoutComponent>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <ConditionalLayout>{children}</ConditionalLayout>
+
+        <LayoutComponent>
+          {children}
+        </LayoutComponent>
       </body>
     </html>
-  )
+  );
 }
