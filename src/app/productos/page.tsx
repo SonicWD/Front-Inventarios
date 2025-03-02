@@ -42,7 +42,7 @@ interface Categoria {
 // Opciones para la unidad de medida
 const unidades = ['Unidad', 'Kilogramo', 'Gramo', 'Litro', 'Mililitro'];
 
-export function ProductosComponent() {
+export default function ProductosComponent() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [newProducto, setNewProducto] = useState<Producto>({
@@ -315,5 +315,3 @@ export function ProductosComponent() {
     </motion.div>
   );
 }
-
-export default ProductosComponent;

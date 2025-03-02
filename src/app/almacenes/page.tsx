@@ -1,7 +1,7 @@
 'use client'
 
 import config from '@/utils/config'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Edit, Trash2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,7 @@ interface Almacen {
   uso_actual: number;
 }
 
-export function AlmacenesComponent() {
+export default function AlmacenesComponent() {
   const [almacenes, setAlmacenes] = useState<Almacen[]>([])
   const [newAlmacen, setNewAlmacen] = useState<Almacen>({
     id: 0,
@@ -29,7 +29,6 @@ export function AlmacenesComponent() {
   })
   const [isEditing, setIsEditing] = useState(false)
 
-  // Función auxiliar para obtener los headers con el token actualizado
   const getAuthHeaders = () => {
     const token = localStorage.getItem('access_token')
     return {
@@ -38,11 +37,7 @@ export function AlmacenesComponent() {
     }
   }
 
-  useEffect(() => {
-    fetchAlmacenes()
-  }, [])
-
-  const fetchAlmacenes = async () => {
+  const fetchAlmacenes = useCallback(async () => {
     try {
       const response = await fetch(`${config.API_URL}/almacenes`, {
         method: 'GET',
@@ -54,7 +49,11 @@ export function AlmacenesComponent() {
     } catch (error) {
       console.error('Error fetching almacenes:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchAlmacenes()
+  }, [fetchAlmacenes])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -124,106 +123,22 @@ export function AlmacenesComponent() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       <h2 className="text-3xl font-bold mb-6">Gestión de Almacenes</h2>
       
       <form onSubmit={handleSubmit} className="mb-8 bg-white shadow-md rounded-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            name="nombre"
-            placeholder="Nombre del almacén"
-            value={newAlmacen.nombre}
-            onChange={handleInputChange}
-            required
-          />
-          <Input
-            name="tipo"
-            placeholder="Tipo de almacén"
-            value={newAlmacen.tipo}
-            onChange={handleInputChange}
-            required
-          />
-          <Input
-            name="rango_temperatura"
-            placeholder="Rango de temperatura"
-            value={newAlmacen.rango_temperatura}
-            onChange={handleInputChange}
-            required
-          />
-          <Input
-            name="capacidad"
-            type="number"
-            placeholder="Capacidad"
-            value={newAlmacen.capacidad}
-            onChange={handleInputChange}
-            required
-          />
-          <Input
-            name="uso_actual"
-            type="number"
-            placeholder="Uso actual"
-            value={newAlmacen.uso_actual}
-            onChange={handleInputChange}
-            required
-          />
+          <Input name="nombre" placeholder="Nombre del almacén" value={newAlmacen.nombre} onChange={handleInputChange} required />
+          <Input name="tipo" placeholder="Tipo de almacén" value={newAlmacen.tipo} onChange={handleInputChange} required />
+          <Input name="rango_temperatura" placeholder="Rango de temperatura" value={newAlmacen.rango_temperatura} onChange={handleInputChange} required />
+          <Input name="capacidad" type="number" placeholder="Capacidad" value={newAlmacen.capacidad} onChange={handleInputChange} required />
+          <Input name="uso_actual" type="number" placeholder="Uso actual" value={newAlmacen.uso_actual} onChange={handleInputChange} required />
         </div>
         <div className="mt-4 flex justify-between">
-          <Button type="submit">
-            {isEditing ? (
-              <>
-                <Save className="mr-2 h-4 w-4" /> Actualizar Almacén
-              </>
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" /> Agregar Almacén
-              </>
-            )}
-          </Button>
-          {isEditing && (
-            <Button type="button" variant="outline" onClick={resetForm}>
-              Cancelar Edición
-            </Button>
-          )}
+          <Button type="submit">{isEditing ? <><Save className="mr-2 h-4 w-4" /> Actualizar</> : <><Plus className="mr-2 h-4 w-4" /> Agregar</>}</Button>
+          {isEditing && <Button type="button" variant="outline" onClick={resetForm}>Cancelar</Button>}
         </div>
       </form>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Rango de Temperatura</TableHead>
-            <TableHead>Capacidad</TableHead>
-            <TableHead>Uso Actual</TableHead>
-            <TableHead>Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {almacenes.map((almacen) => (
-            <TableRow key={almacen.id}>
-              <TableCell>{almacen.nombre}</TableCell>
-              <TableCell>{almacen.tipo}</TableCell>
-              <TableCell>{almacen.rango_temperatura}</TableCell>
-              <TableCell>{almacen.capacidad}</TableCell>
-              <TableCell>{almacen.uso_actual}</TableCell>
-              <TableCell>
-                <Button variant="ghost" size="sm" onClick={() => handleEdit(almacen)}>
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(almacen.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
     </motion.div>
   )
 }
-
-export default AlmacenesComponent
